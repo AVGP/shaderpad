@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+  <style>
+  body {
+    width: 100%;
+  }
+  canvas, textarea {
+    box-sizing: border-box;
+    display: block;
+    width: 50%;
+  }
+
+  canvas { float: left; }
+  textarea {
+    height: 50%;
+  }
+
+  .column {
+    height: 100vh;
+  }
+  </style>
+</head>
+<body>
+  <canvas width="500" height="500"></canvas>
+  <div class="column">
+    <textarea id="vs" rows="50" cols="120">
+attribute vec2 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+varying highp vec2 vTextureCoord;
+
+void main(void) {
+  vTextureCoord = aTextureCoord;
+  gl_Position = vec4(aVertexPosition, 0.0, 1.0);
+}
+    </textarea>
+    <textarea id="fs" rows="50" cols="120">
+precision highp float;
+varying highp vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+
+void main(void) {
+  gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+}
+    </textarea>
+  </div>
+
+  <script src="dat.gui.min.js"></script>
+  <script>
+
+  var shaderVars = {
+    image: 'sunny.jpg',
+    a: 1.0,
+    b: 1.0,
+    c: 1.0,
+    d: 1.0
+  }
+
+  // GUI code
+
+  var gui = new dat.GUI()
+  gui.add(shaderVars, 'image', ['sunny.jpg', 'overcast.jpg', 'sunset.jpg']).onChange(loadTexture)
+  gui.add(shaderVars, 'a').min(0).max(1).step(0.01).onChange(function(val) { shaderVars.a = val; changeShaders() })
+  gui.add(shaderVars, 'b').min(0).max(1).step(0.01).onChange(function(val) { shaderVars.a = val; changeShaders() })
+  gui.add(shaderVars, 'c').min(0).max(1).step(0.01).onChange(function(val) { shaderVars.a = val; changeShaders() })
+  gui.add(shaderVars, 'd').min(0).max(1).step(0.01).onChange(function(val) { shaderVars.a = val; changeShaders() })
+
+  // WebGL related code
+
+  var canvas = document.querySelector('canvas');
+  var gl = canvas.getContext('webgl');
+  var texture = gl.createTexture()
+
+  var vertices = [
+    1.0,  1.0,
+   -1.0,  1.0,
+    1.0, -1.0,
+   -1.0, -1.0
+  ];
+  var vertexPosBuffer = gl.createBuffer();
+
+  // Setup
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+
+  // filling in the vertices
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+  vertexPosBuffer.itemSize = 2;
+  vertexPosBuffer.numItems = 4;
+
+  // compiling, attaching, linking the shaders
+  function changeShaders() {
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var vertexShaderSrc = document.getElementById("vs").value;
+    var fragmentShaderSrc = document.getElementById("fs").value;
+    var shaderProgram = gl.createProgram();
+    var vs = gl.createShader(gl.VERTEX_SHADER);
+    var fs = gl.createShader(gl.FRAGMENT_SHADER);
+
+    gl.shaderSource(vs, vertexShaderSrc);
+    gl.compileShader(vs);
+    if(!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+      alert('Vertex shader failed compilation:\n' + gl.getShaderInfoLog(vs))
+      console.log(gl.getShaderInfoLog(shaderProgram))
+    }
+    gl.shaderSource(fs, fragmentShaderSrc);
+    gl.compileShader(fs);
+    if(!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
+      alert('Fragment shader failed compilation:\n' + gl.getShaderInfoLog(fs))
+      console.log(gl.getShaderInfoLog(shaderProgram))
+    }
+
+    gl.attachShader(shaderProgram, vs);
+    gl.attachShader(shaderProgram, fs);
+    gl.linkProgram(shaderProgram);
+    if(!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+      alert("Could not initialise shaders");
+    }
+    gl.useProgram(shaderProgram);
+
+    // bind the uniforms
+    gl.uniform1f(gl.getUniformLocation(shaderProgram, "uA"), shaderVars.a);
+    gl.uniform1f(gl.getUniformLocation(shaderProgram, "uB"), shaderVars.b);
+    gl.uniform1f(gl.getUniformLocation(shaderProgram, "uC"), shaderVars.c);
+    gl.uniform1f(gl.getUniformLocation(shaderProgram, "uD"), shaderVars.d);
+
+    // Texture coordinate attribute
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
+
+    // Vertex position attribute
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertexPosBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems);
+  }
+
+  // Texture
+/*
+1.0,  1.0,
+-1.0,  1.0,
+1.0, -1.0,
+-1.0, -1.0
+
+*/
+
+  var texCoordinates = [
+    0.0,  0.0,
+    1.0,  0.0,
+    0.0,  1.0,
+    1.0,  1.0
+  ]
+  var texCoordBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoordinates), gl.STATIC_DRAW);
+
+  function loadTexture(imgName) {
+    var img = new Image()
+    img.onload = function() {
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      changeShaders(); // to avoid unrenderable texture
+    }
+    img.src = imgName
+  }
+
+  loadTexture('sunny.jpg')
+
+  document.getElementById("vs").addEventListener('change', changeShaders)
+  document.getElementById("fs").addEventListener('change', changeShaders)
+
+  </script>
+</body>
+</html>
