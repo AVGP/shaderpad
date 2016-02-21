@@ -64,9 +64,9 @@ void main(void) {
   var gui = new dat.GUI()
   gui.add(shaderVars, 'image', ['sunny.jpg', 'overcast.jpg', 'sunset.jpg']).onChange(loadTexture)
   gui.add(shaderVars, 'a').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.a = val; changeShaders() })
-  gui.add(shaderVars, 'b').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.a = val; changeShaders() })
-  gui.add(shaderVars, 'c').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.a = val; changeShaders() })
-  gui.add(shaderVars, 'd').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.a = val; changeShaders() })
+  gui.add(shaderVars, 'b').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.b = val; changeShaders() })
+  gui.add(shaderVars, 'c').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.c = val; changeShaders() })
+  gui.add(shaderVars, 'd').min(0).max(1).step(0.1).onChange(function(val) { shaderVars.d = val; changeShaders() })
 
   // WebGL related code
 
