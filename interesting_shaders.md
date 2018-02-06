@@ -11,7 +11,7 @@ uniform float uA;
 void main(void) {
 
   vec2 pos = vTextureCoord;
-  float radius = uA * 4.0 / 512.0;
+  float radius = uA * 4.0 / 1024.0;
 
   vec3 sum = vec3(0);
   sum += texture2D(uSampler, pos + vec2(-radius)).rgb;
@@ -41,7 +41,7 @@ uniform float uA;
 void main(void) {
 
   vec2 pos = vTextureCoord;
-  float radius = uA * 4.0 / 512.0;
+  float radius = uA * 4.0 / 1024.0;
 
   vec3 sum = vec3(0);
   sum += texture2D(uSampler, pos + vec2(-radius)).rgb;
@@ -56,6 +56,6 @@ void main(void) {
   sum += texture2D(uSampler, pos + vec2(0.0, radius)).rgb * 2.0;
   sum += texture2D(uSampler, pos + vec2(radius, radius)).rgb;
 
-  gl_FragColor = vec4((1.0 / 9.0) * sum, 1.0);
+  gl_FragColor = vec4((1.0 / 16.0) * sum, 1.0);
 }
 ```
