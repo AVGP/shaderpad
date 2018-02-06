@@ -59,3 +59,43 @@ void main(void) {
   gl_FragColor = vec4((1.0 / 16.0) * sum, 1.0);
 }
 ```
+
+## Edges
+
+```glsl
+precision highp float;
+
+varying highp vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+uniform float uA;
+
+float resolution = 1024.0;
+
+void main(void) {
+  float x = 1.0 / resolution;
+  float y = 1.0 / resolution;
+
+  vec4 horizEdge = vec4( 0.0 );
+  horizEdge -= texture2D( uSampler, vec2( vTextureCoord.x - x, vTextureCoord.y - y ) ) * 1.0;
+  horizEdge -= texture2D( uSampler, vec2( vTextureCoord.x - x, vTextureCoord.y     ) ) * 2.0;
+  horizEdge -= texture2D( uSampler, vec2( vTextureCoord.x - x, vTextureCoord.y + y ) ) * 1.0;
+  horizEdge += texture2D( uSampler, vec2( vTextureCoord.x + x, vTextureCoord.y - y ) ) * 1.0;
+  horizEdge += texture2D( uSampler, vec2( vTextureCoord.x + x, vTextureCoord.y     ) ) * 2.0;
+  horizEdge += texture2D( uSampler, vec2( vTextureCoord.x + x, vTextureCoord.y + y ) ) * 1.0;
+
+  vec4 vertEdge = vec4( 0.0 );
+  vertEdge -= texture2D( uSampler, vec2( vTextureCoord.x - x, vTextureCoord.y - y ) ) * 1.0;
+  vertEdge -= texture2D( uSampler, vec2( vTextureCoord.x    , vTextureCoord.y - y ) ) * 2.0;
+  vertEdge -= texture2D( uSampler, vec2( vTextureCoord.x + x, vTextureCoord.y - y ) ) * 1.0;
+  vertEdge += texture2D( uSampler, vec2( vTextureCoord.x - x, vTextureCoord.y + y ) ) * 1.0;
+  vertEdge += texture2D( uSampler, vec2( vTextureCoord.x    , vTextureCoord.y + y ) ) * 2.0;
+  vertEdge += texture2D( uSampler, vec2( vTextureCoord.x + x, vTextureCoord.y + y ) ) * 1.0;
+  vec3 edge = sqrt((horizEdge.rgb * horizEdge.rgb) + (vertEdge.rgb * vertEdge.rgb));
+  if(((edge.r + edge.g + edge.b) / 3.0) >= uA) {
+    gl_FragColor = vec4( 1.0 );
+  } else {
+    gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 );
+  }
+}
+```
