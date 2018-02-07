@@ -1,3 +1,25 @@
+# Note on the four sliders:
+
+You can make your shaders interactive by using the uniforms they export to: `uA`, `uB`, `uC` and `uD` like this:
+
+```glsl
+  precision highp float;
+  varying highp vec2 vTextureCoord;
+
+  uniform sampler2D uSampler;
+  
+  // access the slider values - each exposes a single float value between 0.0 and 1.0:
+  uniform float uA;
+  uniform float uB;
+  uniform float uC;
+  uniform float uD;  
+
+void main(void) {
+  // uA = red, uB = green, uC = blue, uD = alpha
+  gl_FragColor = vec4(uA, uB, uC, uD);
+}
+```
+
 # Fragment:
 
 ## Simple blur
