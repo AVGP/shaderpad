@@ -20,7 +20,7 @@ void main(void) {
 }
 ```
 
-# Fragment:
+# Fragment shaders:
 
 ## Simple blur
 ```glsl
@@ -56,7 +56,7 @@ void main(void) {
 ```glsl
 precision highp float;
 varying highp vec2 vTextureCoord;
-
+avgp.github.io/shaderpad/a
 uniform sampler2D uSampler;
 uniform float uA;
 
@@ -119,5 +119,29 @@ void main(void) {
   } else {
     gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 );
   }
+}
+```
+
+# Vertex shaders:
+
+## Rotate
+
+```
+attribute vec2 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+varying highp vec2 vTextureCoord;
+
+uniform float uA;
+
+mat2 rotate(float radians) {
+  radians *= 2.0 * 3.1415;
+  return mat2( cos(radians), sin(radians),
+              -sin(radians), cos(radians));
+}
+
+void main(void) {
+  vTextureCoord = aTextureCoord;
+  gl_Position = vec4(aVertexPosition * rotate(uA), 0.0, 1.0);
 }
 ```
