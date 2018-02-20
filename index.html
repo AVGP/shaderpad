@@ -72,7 +72,9 @@ void main(void) {
 
   var canvas = document.querySelector('canvas');
   var gl = canvas.getContext('webgl');
-  var texture = gl.createTexture()
+  var texture = gl.createTexture();
+
+  var t0 = new Date().getTime() / 1000.0;
 
   var vertices = [
     1.0,  1.0,
@@ -95,14 +97,16 @@ void main(void) {
   vertexPosBuffer.numItems = 4;
 
   // compiling, attaching, linking the shaders
+  var shaderProgram = null
   function changeShaders() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     var vertexShaderSrc = document.getElementById("vs").value;
     var fragmentShaderSrc = document.getElementById("fs").value;
-    var shaderProgram = gl.createProgram();
     var vs = gl.createShader(gl.VERTEX_SHADER);
     var fs = gl.createShader(gl.FRAGMENT_SHADER);
+
+    shaderProgram = gl.createProgram();
 
     gl.shaderSource(vs, vertexShaderSrc);
     gl.compileShader(vs);
@@ -187,6 +191,14 @@ void main(void) {
 
   document.getElementById("vs").addEventListener('change', changeShaders)
   document.getElementById("fs").addEventListener('change', changeShaders)
+
+  requestAnimationFrame(function updateTime() {
+    if(shaderProgram) {
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "uTime"), (new Date().getTime() / 1000.0) - t0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems);
+    }
+    requestAnimationFrame(updateTime)
+  })
 
   </script>
 </body>
