@@ -122,6 +122,28 @@ void main(void) {
 }
 ```
 
+## Spherical with concentric circles blend
+```
+precision highp float;
+varying highp vec2 vTextureCoord;
+uniform float uA;
+
+uniform sampler2D uSampler;
+
+void main(void) {
+  vec2 p = -1.0 + 2.0 * vTextureCoord.xy;
+  float r =sqrt(dot(p, p));
+
+  float f = sqrt(1.0 - r*r);
+  bool toggle = mod(r, 0.1) > 0.05 ? true : false;
+  if (f > 0.0 && toggle) 
+    gl_FragColor = vec4(vec3(f), 1.0) * texture2D(uSampler, vec2(vTextureCoord.x, vTextureCoord.y));
+  else 
+    gl_FragColor = vec4(vTextureCoord.x, vTextureCoord.y, 1.0, 1.0);
+}
+    
+```
+
 # Vertex shaders:
 
 ## Rotate
